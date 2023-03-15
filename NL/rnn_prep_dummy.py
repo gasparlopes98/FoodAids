@@ -7,6 +7,9 @@ nltk.download('stopwords') # install NLTK data to home user directory
 from nltk.corpus import stopwords
 import unidecode
 import csv
+import torchtext
+from torchtext.data import get_tokenizer
+tokenizer = get_tokenizer("basic_english")
 
 REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@;],')
 BAD_SYMBOLS_RE = re.compile('[^a-z #+_]')
@@ -47,16 +50,19 @@ with open('receitas/receitas.csv') as file:
 # print(rows)
 
 for receitas in rows:
-    print(' '.join(receitas[:2]))
-    text=text_prepare(' '.join(receitas[:2]))
-    print(text)
-    doc = nlp(text)
+    with open(receitas[2]) as f:
+        lines = f.readlines()
+    tokens = tokenizer(lines)
+    # print(' '.join(receitas[:2]))
+    # text=text_prepare(' '.join(receitas[:2]))
+    # print(text)
+    # doc = nlp(text)
 
-    features = []
-    for token in doc:
-        features.append({'token' : token.text, 'pos' : token.pos_})
+    # features = []
+    # for token in doc:
+    #     features.append({'token' : token.text, 'pos' : token.pos_})
     
-    dataset.append((receitas[2],features))
+    # dataset.append((receitas[2],features))
 
     # fdf = pd.DataFrame(features)
     # fdf.head(len(fdf))

@@ -34,7 +34,7 @@ for i in range(len(text)):
     
     # Remove firsts character for target sequence
     target_seq.append(text[i][1:])
-    # print("Input Sequence: {}\nTarget Sequence: {}".format(input_seq[i], target_seq[i]))
+    print("Input Sequence: {}\nTarget Sequence: {}".format(input_seq[i], target_seq[i]))
     
 # Convert input and target sequences to sequences of integers instead of characters by mapping them using the dictionaries we created above. This will allow us to one-hot-encode our input sequence subsequently.
 for i in range(len(text)):
@@ -46,7 +46,7 @@ seq_len = maxlen - 1
 batch_size = len(text)
 
 input_seq = rnn.one_hot_encode(input_seq, dict_size, seq_len, batch_size)
-# print("Input shape: {} --> (Batch Size, Sequence Length, One-Hot Encoding Size)".format(input_seq.shape))
+print("Input shape: {} --> (Batch Size, Sequence Length, One-Hot Encoding Size)".format(input_seq.shape))
 
 # move the data from numpy arrays to Torch Tensors 
 input_seq = torch.from_numpy(input_seq)
