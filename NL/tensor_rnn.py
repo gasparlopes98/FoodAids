@@ -42,13 +42,13 @@ def text_prepare(text):
 
 rows = []
 dataset = []
-with open('receitas/receitas.csv') as file:
+with open('recipes.csv') as file:
     csvreader = csv.reader(file)
     header = next(csvreader)
     for row in csvreader:
         rows.append(row)
 
-training_size =3
+training_size =50
 vocab_size = 10000
 embedding_dim = 16
 
@@ -58,13 +58,14 @@ oov_tok = "<OOV>"
 labels=[]
 sentences=[]
 
-for receitas in rows:
-    with open("receitas/"+receitas[2]) as f:
-        recepies = f.readlines()
-    label=' '.join(receitas[:2])
+for row in rows:
+    # with open("row/"+row[2]) as f:
+    #     recepies = f.readlines()
 
-    recepies=' '.join(recepies)
-    sentences.append(text_prepare(recepies))
+    # recepies=' '.join(recepies)
+    recipes=row[4]
+    label=' '.join(row[:4])
+    sentences.append(text_prepare(recipes))
     labels.append(label)
     
 training_sentences = sentences[0:training_size]
@@ -117,5 +118,11 @@ def plot_graphs(history, string):
   plt.legend([string, 'val_'+string])
   plt.show()
   
+print()  
+
 plot_graphs(history, "accuracy")
 plot_graphs(history, "loss")
+
+layer_outputs = [layer.output for layer in model.layers]
+viz_model = model(input=model.input, output=layer_outputs)
+print(viz_model)
