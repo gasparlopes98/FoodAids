@@ -29,7 +29,7 @@ def ingredient_parser_final(ingredient):
     ingredients = unidecode.unidecode(ingredients)
     return ingredients
 
-def get_recommendations(N, scores,lerning_param,csv_path):
+def get_recommendations(N, scores,learning_param,csv_path):
     """
     Top-N recomendations order by score
     """
@@ -38,13 +38,13 @@ def get_recommendations(N, scores,lerning_param,csv_path):
     # order the scores with and filter to get the highest N scores
     top = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:N]
     # create dataframe to load in recommendations
-    lerning_param.insert(0, "title")
-    lerning_param.append("score")
-    recommendation = pd.DataFrame(columns=lerning_param)
+    learning_param.insert(0, "title")
+    learning_param.append("score")
+    recommendation = pd.DataFrame(columns=learning_param)
 
     for i in top:
         recommendation.at[i, "title"] = unidecode.unidecode(df_recipes["title"][i])
-        for param in lerning_param[1:-1]:
+        for param in learning_param[1:-1]:
             recommendation.at[i, param] = ingredient_parser_final(
                 df_recipes[param][i]
             )
@@ -52,7 +52,7 @@ def get_recommendations(N, scores,lerning_param,csv_path):
 
     return recommendation
 
-def get_recs(ingredients,model_path,csv_path,lerning_param, N=5, mean=False):
+def get_recs(ingredients,model_path,csv_path,learning_param, N=5, mean=False):
     # load in word2vec model
     model = Word2Vec.load(model_path)
     model.init_sims(replace=True)
@@ -64,7 +64,7 @@ def get_recs(ingredients,model_path,csv_path,lerning_param, N=5, mean=False):
     
     # parse parameters
     parameters=pd.DataFrame()
-    for i in lerning_param:
+    for i in learning_param:
         if parameters.empty:
             parameters = data[i]
         else:
@@ -97,14 +97,14 @@ def get_recs(ingredients,model_path,csv_path,lerning_param, N=5, mean=False):
     cos_sim = map(lambda x: cosine_similarity(input_embedding, x)[0][0], doc_vec)
     scores = list(cos_sim)
     # Filter top N recommendations
-    recommendations = get_recommendations(N, scores,lerning_param,csv_path)
+    recommendations = get_recommendations(N, scores,learning_param,csv_path)
     return recommendations
 
 if __name__ == "__main__":
     input = "beans"
     model_path = "word2vec/models/model_ingredients_region.model"
     csv_path = "word2vec/recipes.csv"
-    lerning_param = ["ingredients","region"]
-    rec = get_recs(input,model_path,csv_path,lerning_param)
+    learning_param = ["ingredients","region"]
+    rec = get_recs(input,model_path,csv_path,learning_param)
     print("For this key words: ", input)
     print(rec)

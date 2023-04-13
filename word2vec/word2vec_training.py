@@ -17,10 +17,10 @@ class Model:
         self.window = window
         self.min_count = min_count
         
-    def training(self,file,output_file,lerning_param):
+    def training(self,file,output_file,learning_param):
         data = pd.read_csv(file)
         parameters=pd.DataFrame()
-        for i in lerning_param:
+        for i in learning_param:
             if parameters.empty:
                 parameters = data[i]
             else:
@@ -63,6 +63,6 @@ if __name__ == "__main__":
     
     input_file = 'word2vec/recipes.csv'
     output_file = 'word2vec/models/model_ingredients_region.model'
-    lerning_param = ["ingredients","region"]
+    learning_param = ["ingredients","region"]
     
-    modelTraining.training(input_file,output_file,lerning_param)
+    modelTraining.training(input_file,output_file,learning_param)
