@@ -14,7 +14,7 @@ This function takes in a list (but it is a string as it comes from pandas datafr
     output = ['duck', 'chinese five spice powder', 'clementine', 'fresh bay leaf', 'gravy', 'garlic',
                 'carrot', 'red onion', 'plain flour', 'marsala', 'organic chicken stock']
 """
-def ingredient_parser(ingreds):
+def ingredient_parser(ingreds,keyword=False):
     measures = [
         "teaspoon",
         "t",
@@ -413,7 +413,7 @@ def ingredient_parser(ingreds):
     if isinstance(ingreds, list):
         ingredients = ingreds
     else:
-        # ingreds = ingreds.replace(" ",",")
+        ingreds = ingreds.replace(" ",",")
         ingredients = ingreds.split(",")
         
     translator = str.maketrans("", "", string.punctuation)
@@ -434,7 +434,8 @@ def ingredient_parser(ingreds):
         # Gets rid of measuring words/phrases, e.g. heaped teaspoon
         items = [word for word in items if word not in measures]
         # Get rid of common easy words
-        items = [word for word in items if word not in words_to_remove]
+        if not keyword:
+            items = [word for word in items if word not in words_to_remove]
 
         if items:
             ingred_list.append(" ".join(items))
