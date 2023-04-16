@@ -1,3 +1,5 @@
+# import os
+# os.chdir('/home/golopes/mestrado/projetos/FoodAid/')
 import unidecode
 import pandas as pd
 import embeddings as emb
@@ -6,7 +8,7 @@ from gensim.models import Word2Vec
 from sklearn.metrics.pairwise import cosine_similarity
 from ingredient_parser import ingredient_parser
 
-csv_path = "csv_file/recipes.csv"
+csv_file = "csv_file/recipes.csv"
 
 def get_and_sort_corpus(data):
     """
@@ -35,34 +37,37 @@ def get_recommendations(N, scores,learning_param):
     """
     Top-N recomendations order by score
     """
+    
     # load in recipe dataset
-    df_recipes = pd.read_csv(csv_path)
+    df_recipes = pd.read_csv(csv_file)
     # order the scores with and filter to get the highest N scores
     top = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:N]
     # create dataframe to load in recommendations
-    learning_param.insert(0, "title")
-    learning_param.append("score")
+    learning_param.append("recipe")
     recommendation = pd.DataFrame(columns=learning_param)
+    learning_param.append("score")
 
     for i in top:
-        recommendation.at[i, "title"] = unidecode.unidecode(df_recipes["title"][i])
-        for param in learning_param[1:-1]:
-            recommendation.at[i, param] = ingredient_parser_final(
+        # recommendation.at[i, "title"] = unidecode.unidecode(df_recipes["title"][i])
+        for param in learning_param[0:-1]:
+            recommendation.at[i, param] = unidecode.unidecode(
                 df_recipes[param][i]
             )
         recommendation.at[i, "score"] = f"{scores[i]}"
-
     return recommendation
 
-def get_recipes_keywords(ingredients,model_path,learning_param, N=5, mean=False):
+def get_recipes_keywords(input, N=1, mean=False):
     # load in word2vec model
+    learning_param = ["title","ingredients","region"]
+    model_path = "NLP/model/model_key_recipe.model"
+    
     model = Word2Vec.load(model_path)
     model.init_sims(replace=True)
     if model:
         print("Successfully loaded model")
         
     # load in data
-    data = pd.read_csv(csv_path)
+    data = pd.read_csv(csv_file)
     
     # parse parameters
     parameters=pd.DataFrame()
@@ -86,12 +91,10 @@ def get_recipes_keywords(ingredients,model_path,learning_param, N=5, mean=False)
     vec_tr.fit(corpus)
     doc_vec = vec_tr.transform(corpus)
     doc_vec = [doc.reshape(1, -1) for doc in doc_vec]
-    assert len(doc_vec) == len(corpus)
-    
-    # create tokens with elements
-    input = ingredients.split(",")
+    # assert len(doc_vec) == len(corpus)
+
     # parse ingredient list
-    input = ingredient_parser(input)
+    input = ingredient_parser(input,keyword=True)
     # get embeddings for ingredient doc
     input_embedding = vec_tr.transform([input])[0].reshape(1, -1)
 
@@ -103,10 +106,9 @@ def get_recipes_keywords(ingredients,model_path,learning_param, N=5, mean=False)
     return recommendations
 
 if __name__ == "__main__":
-    input = "beans"
-    model_path = "NLP/model/model_keyword_region.model"
-    learning_param = ["ingredients","region"]
+    input = "francesinha"
+    n_sugestions=3
     
-    rec = get_recipes_keywords(input,model_path,learning_param)
+    rec = get_recipes_keywords(input,n_sugestions)
     print("For this key words: ", input)
     print(rec)

@@ -27,12 +27,12 @@ class Model:
                 parameters = parameters + ',' + data[i]
         
         data['parsed'] = parameters.apply(ingredient_parser)
-        data.head()
+        # data.head()
 
         corpus = get_and_sort_corpus(data)
-        print(f"Length of corpus: {len(corpus)}")
+        # print(f"Length of corpus: {len(corpus)}")
 
-        model_cbow = Word2Vec(corpus, sg=self.sg, workers=self.workers, window=self.window, min_count=self.min_count, vector_size=100)
+        model_cbow = Word2Vec(corpus, sg=self.sg, workers=self.workers, window=self.window, min_count=self.min_count, vector_size=100,compute_loss=True)
 
         #Summarize the loaded model
         print(model_cbow)
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         )
     
     input_file = 'csv_file/recipes.csv'
-    output_file = 'NLP/model/model_keyword_region.model'
-    learning_param = ["ingredients","region"]
+    output_file = 'NLP/model/model_key_recipe.model'
+    learning_param = ["title","ingredients","region"]
     
     modelTraining.training(input_file,output_file,learning_param)
