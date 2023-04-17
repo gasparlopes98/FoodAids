@@ -5,19 +5,16 @@ import nltk
 nltk.download('stopwords') # install NLTK data to home user directory
 from nltk.corpus import stopwords
 import unidecode
-
-file_name = "receitas_bacalhau_bras/1_bacalhau_bras.txt"
-f = open(file_name, 'r')
-file_contents = f.read()
-
-nlp = spacy.load("pt_core_news_sm")
+from word2vec import load_word2vec,get_recipes_keywords
+model_w2v=load_word2vec()
+nlp = spacy.load("en_core_web_sm")
 
 def clear_input(_):
     return ''
 
 REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;]')
 BAD_SYMBOLS_RE = re.compile('[^0-9a-z #+_]')
-STOPWORDS = set(stopwords.words('portuguese'))
+STOPWORDS = set(stopwords.words('english'))
 STOPWORDS_RE = re.compile(r"\b(" + "|".join(STOPWORDS) + ")\\W")
 
 def text_prepare(text):
@@ -66,10 +63,10 @@ def message_probability(user_message, recognised_words, single_response=False, r
         return 0
 
 def unknown():
-    response = ["Não percebi... ",
-            "?...",
-            "Acho que não sou capaz de responder a isso.",
-            "O que é que isso significa?"][random.randrange(4)]
+    response = ["I didin't understand can you repeat... ",
+                "?...",
+                "I don't think I know how to respond to that.",
+                "What do you mean?"][random.randrange(4)]
     return response
 
 def check_all_messages(message):
@@ -81,11 +78,13 @@ def check_all_messages(message):
         highest_prob_list[bot_response] = message_probability(message, list_of_words, single_response, required_words)
 
     # Responses -------------------------------------------------------------------------------------------------------
-    response('Olá!', ['ola', 'hey'], single_response=True)
-    response('Adeus!', ['adeus', 'ate', 'breve', 'xau'], single_response=True)
-    response('Estou bem e tu?', ['como', 'estas', 'tudo', 'bem'], single_response=True)
-    response('De nada!', ['obrigado'], single_response=True)
-    response('Ok, aqui vai: \n' + file_contents, ['da', 'receita', 'bacalhau'], required_words=['receita', 'bacalhau'])
+    response('Hello! How can I help you?', ['hi', 'hey','hello'], single_response=True)
+    response('Goodbye!', ['See you', 'goodbye','bye'], single_response=True)
+    response('I am ok. And you?', ['how', 'are', 'you'], single_response=True)
+    response('You are Welcome', ['thank you','thanks'], single_response=True)
+    response('Recipe: ', ['give','recipe',''], single_response=False)
+    #response('Ok, aqui vai: \n' + file_contents, ['da', 'receita', 'bacalhau'], required_words=['
+
     
     best_match = max(highest_prob_list, key=highest_prob_list.get)
     # print(highest_prob_list)
@@ -93,17 +92,43 @@ def check_all_messages(message):
 
     return unknown() if highest_prob_list[best_match] < 1 else best_match
 
+
+def extract_recipe_name(user_input):
+    doc = nlp(user_input)
+    # extract noun chunks that are likely to be dish names
+    recipe_names = [chunk.text for chunk in doc.noun_chunks if "recipe" in chunk.root.head.text.lower()]
+    return recipe_names
+
 # Used to get the response
 def get_response(user_input):
     text = text_prepare(user_input)
     print(text)
     doc = nlp(text)
-    response = check_all_messages([token.text for token in doc])
+    recipe_names = extract_recipe_name(text) # extract dish name from user input
+    if recipe_names: # if dish name is found
+        response = generate_response(recipe_names) # generate response using dish name
+    else:
+        response = check_all_messages([token.text for token in doc]) # generate response without dish name
     return response
 
 
+def generate_response(recipe_names):
+    output = "The following recipes exist for the dish name you mentioned: " + ', '.join(recipe_names)
+    return output
+
 clear_input
 while True:
-    inp=input('Tu: ')
-    print('Bot: ' + get_response(inp))
+    inp=input('user: ')
+    resp=get_response(inp)
+    print('FoodAids: ' + resp)
+    if resp == 'Goodbye!':
+        break;
+    elif resp == 'Recipe: ':
+        recipe=get_recipes_keywords(model_w2v,inp)
+        print('Title: ',end="")
+        print(' '.join(recipe.title.values))
+        print('Ingredients: ',end="")
+        [print(i) for i in recipe.ingredients.values]
+        print('Preparation: ',end="")
+        print(' '.join(recipe.recipe.values))
         
