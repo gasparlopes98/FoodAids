@@ -1,6 +1,6 @@
-import os
-
-print(os.path.abspath(os.getcwd()))
+from sys import path
+path.append('reconhecimento_imagem')
+import predict_dish as predict
 
 import spacy
 import random
@@ -12,12 +12,11 @@ import unidecode
 from word2vec import load_word2vec,get_recipes_keywords
 model_w2v=load_word2vec()
 
-from reconhecimento_imagem.predict_dish import load_model,predict_and_plot_imgpath_only
-model_img=load_model()
+
+model_img=predict.read_model()
 
 nlp = spacy.load("en_core_web_sm")
 
-print(os.path.abspath(os.getcwd()))
 
 
 def clear_input(_):
@@ -94,7 +93,10 @@ def check_all_messages(message):
     response('I am ok. And you?', ['how', 'are', 'you'], single_response=True)
     response('You are Welcome', ['thank you','thanks'], single_response=True)
     response('Recipe: ', ['give','recipe',''], single_response=False)
-    response('Dish in image is: ', ['identify','dish',''], single_response=False)
+    
+    #response('Dish in image is: ', ['identify','dish',''], single_response=False)
+
+    response('Dish in image is: ', ['.jpg'], single_response=False)
     #response('Ok, aqui vai: \n' + file_contents, ['da', 'receita', 'bacalhau'], required_words=['
 
     
@@ -137,10 +139,18 @@ while True:
         break;
     
     elif resp == 'Dish in image is: ':
+        print(inp)
         image_path = [token.text for token in inp if token.text.startswith('/')]
         if image_path:
-                predicted_dish = predict_and_plot_imgpath_only(model_img, image_path[0])
+                predicted_dish = predict.predict_image(model_img, image_path[0])
                 print(predicted_dish)
+
+    elif ".jpg" in inp:
+        print("teste")
+        print(inp)
+        print("teste")
+        path = inp
+        response = predict.predict_image(model_img,path)  
 
     elif resp == 'Recipe: ':
         recipe=get_recipes_keywords(model_w2v,inp)
