@@ -30,6 +30,9 @@ class NLModel(keras.Model):
         x = self.model(inputs)
         return x
 
+def clear_input(_):
+    return ''
+
 def get_labels(df, tokenized_instructions):
     labels = []
     dic_ing={}
@@ -101,7 +104,7 @@ def train_model_RecipeToIngreds():
     with open('NLP/save/ingred_vocab.pkl', 'wb') as fp:
         pickle.dump(dic_ing, fp)
     
-def get_RecipeToIngreds(input,model):
+def get_RecipeToIngreds(txt,model):
     
     with open('NLP/save/vocab.pkl', 'rb') as fp:
         vocab = pickle.load(fp)
@@ -110,7 +113,7 @@ def get_RecipeToIngreds(input,model):
         dic_ing = pickle.load(fp)
 
     input_tokenized=[]
-    input_tokenized.append(nlp(input))
+    input_tokenized.append(nlp(txt))
     inp_seq = prepare_sequences(input_tokenized, max_len=MAX_LEN, vocab=vocab)
     out_seq = model(inp_seq)
     
@@ -121,14 +124,23 @@ def get_RecipeToIngreds(input,model):
     for i in ingreds_test:
         if i in dic_ing.keys() and i not in ing:
             ing.append(i)
+            
+    ing=str(','.join(ing))
+    
+    clear_input
+    title = input('Give Recipe Title: ')
+    df = pd.read_csv("csv_file/recipes.csv")
+    df.loc[len(df)]={'title':title,'ingredients':ing,'recipe':txt}
+    df.to_csv('csv_file/recipes.csv', index=False)
+    
     return ing
     
 if __name__ == "__main__":
     txt = open("test.txt", "r")
-    train_model_RecipeToIngreds()
+    # train_model_RecipeToIngreds()
     model = load_model_RecipeToIngreds()
     ingredients = get_RecipeToIngreds(txt.read(),model)
     
-    print('Ingredients: ',end="")
-    [print(i,end=", ") for i in ingredients]
-    print()
+    print('Ingredients: '+ingredients)
+    # [print(i,end=", ") for i in ingredients]
+    # print()
