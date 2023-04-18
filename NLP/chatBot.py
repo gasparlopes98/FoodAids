@@ -146,11 +146,10 @@ while True:
                 print(predicted_dish)
 
     elif ".jpg" in inp:
-        print("teste")
-        print(inp)
-        print("teste")
+        print(inp)  
         path = inp
-        response = predict.predict_image(model_img,path)  
+        response = predict.predict_image(model_img,path)
+        print(response) 
 
     elif resp == 'Recipe: ':
         recipe=get_recipes_keywords(model_w2v,inp)

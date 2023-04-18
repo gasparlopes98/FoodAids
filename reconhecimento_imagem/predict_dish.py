@@ -25,7 +25,5 @@ def predict_image(model, image):
     else:
         pred_classes = name_Classes[int(tf.round(prediction)[0][0])]
 
-    print(pred_classes)
-
     return pred_classes
 
