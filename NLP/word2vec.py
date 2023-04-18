@@ -2,11 +2,11 @@
 # os.chdir('/home/golopes/mestrado/projetos/FoodAid/')
 import unidecode
 import pandas as pd
-import embeddings as emb
+import NLP.embeddings as emb
 
 from gensim.models import Word2Vec
 from sklearn.metrics.pairwise import cosine_similarity
-from ingredient_parser import ingredient_parser
+from NLP.ingredient_parser import ingredient_parser
 
 csv_file = "csv_file/recipes.csv"
 

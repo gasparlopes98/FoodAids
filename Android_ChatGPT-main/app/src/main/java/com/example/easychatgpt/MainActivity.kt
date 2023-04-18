@@ -93,19 +93,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun addResponse(response: String?) {
-        messageList!!.removeAt(messageList!!.size - 1)
         addToChat(response, Message.SENT_BY_BOT)
     }
 
     fun callAPI(question: String?) {
         //okhttp
-        messageList!!.add(Message("Typing... ", Message.SENT_BY_BOT))
         val jsonBody = JSONObject()
         try {
-            jsonBody.put("model", "text-davinci-003")
             jsonBody.put("prompt", question)
-            jsonBody.put("max_tokens", 4000)
-            jsonBody.put("temperature", 0)
         } catch (e: JSONException) {
             e.printStackTrace()
         }
@@ -166,7 +161,7 @@ class MainActivity : AppCompatActivity() {
                     text = "${firstLabel.text}, ${firstLabel.confidence.times(100).toInt()}%"
                     println(text)
                     text = "I just found " + firstLabel.text
-                    addToChat(text,Message.SENT_BY_ME)
+                    addToChat(text,Message.SENT_BY_BOT)
                 }
             }
 

@@ -9,7 +9,7 @@ import nltk
 nltk.download('stopwords') # install NLTK data to home user directory
 from nltk.corpus import stopwords
 import unidecode
-from word2vec import load_word2vec,get_recipes_keywords
+from NLP.word2vec import load_word2vec,get_recipes_keywords
 model_w2v=load_word2vec()
 
 
@@ -125,38 +125,41 @@ def get_response(user_input):
         response = check_all_messages([token.text for token in doc]) # generate response without dish name
     return response
 
+def get_recipes_keywords_wrapper(input):
+    return get_recipes_keywords(model_w2v,input)
 
 def generate_response(recipe_names):
     output = "The following recipes exist for the dish name you mentioned: " + ', '.join(recipe_names)
     return output
 
 clear_input
-while True:
-    inp=input('user: ')
-    resp=get_response(inp)
-    print('FoodAids: ' + resp)
-    if resp == 'Goodbye!':
-        break;
+if __name__ == "__chatBot__":
+    while True:
+        inp=input('user: ')
+        resp=get_response(inp)
+        print('FoodAids: ' + resp)
+        if resp == 'Goodbye!':
+            break;
     
-    elif resp == 'Dish in image is: ':
-        print(inp)
-        image_path = [token.text for token in inp if token.text.startswith('/')]
-        if image_path:
+        elif resp == 'Dish in image is: ':
+            print(inp)
+            image_path = [token.text for token in inp if token.text.startswith('/')]
+            if image_path:
                 predicted_dish = predict.predict_image(model_img, image_path[0])
                 print(predicted_dish)
 
-    elif ".jpg" in inp:
-        print(inp)  
-        path = inp
-        response = predict.predict_image(model_img,path)
-        print(response) 
+        elif ".jpg" in inp:
+            print(inp)  
+            path = inp
+            response = predict.predict_image(model_img,path)
+            print(response) 
 
-    elif resp == 'Recipe: ':
-        recipe=get_recipes_keywords(model_w2v,inp)
-        print('Title: ',end="")
-        print(' '.join(recipe.title.values))
-        print('Ingredients: ',end="")
-        [print(i) for i in recipe.ingredients.values]
-        print('Preparation: ',end="")
-        print(' '.join(recipe.recipe.values))
+        elif resp == 'Recipe: ':
+            recipe=get_recipes_keywords(model_w2v,inp)
+            print('Title: ',end="")
+            print(' '.join(recipe.title.values))
+            print('Ingredients: ',end="")
+            [print(i) for i in recipe.ingredients.values]
+            print('Preparation: ',end="")
+            print(' '.join(recipe.recipe.values))
         
