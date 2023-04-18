@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import os
+import cv2
 
 def prep_Image(inputImage, img_shape = 224):
 
@@ -11,6 +12,32 @@ def prep_Image(inputImage, img_shape = 224):
     img = img/255 #normalize image
 
     return img
+
+def load_model():
+    model = tf.keras.models.load_model('reconhecimento_imagem/SavedModel')
+    return model
+
+def predict_and_plot_imgpath_only(model,image_path):
+
+    image = cv2.imread(image_path)
+
+    img = prep_Image(image) #Prepare the image for classification
+
+    prediction = model.predict(tf.expand_dims(img, axis = 0)) #Make a prediction
+
+    if (len(prediction[0]) > 1):
+        pred_classes = name_Classes[prediction.argmax()] #more than one output, takes the maximum
+    else:
+        pred_classes = name_Classes[int(tf.round(prediction)[0][0])]
+        
+    '''
+    #displaying results
+    plt.imshow(img)
+    plt.title(f"Prediction: {pred_classes}")
+    plt.axis(False)
+    plt.show()
+    '''
+    return pred_classes
 
 def predict_and_plot(model, image, class_names):
 

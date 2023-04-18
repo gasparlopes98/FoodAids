@@ -1,3 +1,7 @@
+import os
+
+print(os.path.abspath(os.getcwd()))
+
 import spacy
 import random
 import re
@@ -7,7 +11,14 @@ from nltk.corpus import stopwords
 import unidecode
 from word2vec import load_word2vec,get_recipes_keywords
 model_w2v=load_word2vec()
+
+from reconhecimento_imagem.predict_dish import load_model,predict_and_plot_imgpath_only
+model_img=load_model()
+
 nlp = spacy.load("en_core_web_sm")
+
+print(os.path.abspath(os.getcwd()))
+
 
 def clear_input(_):
     return ''
@@ -83,6 +94,7 @@ def check_all_messages(message):
     response('I am ok. And you?', ['how', 'are', 'you'], single_response=True)
     response('You are Welcome', ['thank you','thanks'], single_response=True)
     response('Recipe: ', ['give','recipe',''], single_response=False)
+    response('Dish in image is: ', ['identify','dish',''], single_response=False)
     #response('Ok, aqui vai: \n' + file_contents, ['da', 'receita', 'bacalhau'], required_words=['
 
     
@@ -123,6 +135,13 @@ while True:
     print('FoodAids: ' + resp)
     if resp == 'Goodbye!':
         break;
+    
+    elif resp == 'Dish in image is: ':
+        image_path = [token.text for token in inp if token.text.startswith('/')]
+        if image_path:
+                predicted_dish = predict_and_plot_imgpath_only(model_img, image_path[0])
+                print(predicted_dish)
+
     elif resp == 'Recipe: ':
         recipe=get_recipes_keywords(model_w2v,inp)
         print('Title: ',end="")
