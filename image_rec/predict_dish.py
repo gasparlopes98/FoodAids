@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 def read_model():
-    model = tf.keras.models.load_model('reconhecimento_imagem/SavedModel')
+    model = tf.keras.models.load_model('image_rec/SavedModel')
     return model
 
 def predict_image(model, image):
