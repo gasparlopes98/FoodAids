@@ -2,11 +2,11 @@
 # os.chdir('/home/golopes/mestrado/projetos/FoodAid/')
 import unidecode
 import pandas as pd
-import NLP.embeddings as emb
+import embeddings as emb
 
 from gensim.models import Word2Vec
 from sklearn.metrics.pairwise import cosine_similarity
-from NLP.ingredient_parser import ingredient_parser
+from ingredient_parser import ingredient_parser
 
 csv_file = "csv_file/recipes.csv"
 
@@ -55,17 +55,17 @@ def get_recommendations(N, scores,learning_param):
             )
         recommendation.at[i, "score"] = f"{scores[i]}"
     return recommendation
+
 def load_word2vec():
     model_path = "NLP/model/model_key_recipe.model"
     
     model = Word2Vec.load(model_path)
     model.init_sims(replace=True)
     if model:
-        print("Successfully loaded model")
+        print("Word2Vec Successfully loaded")
     return model
     
 def get_recipes_keywords(model,input, N=1, mean=False):
-    # load in word2vec model
     learning_param = ["title","ingredients","region"]
     
     # load in data
@@ -108,9 +108,9 @@ def get_recipes_keywords(model,input, N=1, mean=False):
     return recommendations
 
 if __name__ == "__main__":
-    input = "give me recipe of francesinha"
-    n_sugestions=3
-    
-    rec = get_recipes_keywords(input,n_sugestions)
+    input = "give me recipe with ham,bread,egg"
+    n_sugestions=1
+    model=load_word2vec()
+    rec = get_recipes_keywords(model,input,n_sugestions)
     print("For this key words: ", input)
     print(rec)

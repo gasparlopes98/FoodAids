@@ -48,7 +48,10 @@ def prepare_sequences(texts, max_len, vocab={"<UNK>": 1, "<PAD>": 0}):
     return pad_sequences(maxlen=max_len, sequences=X, padding="post", value=vocab["<PAD>"])
 
 def load_model_RecipeToIngreds(model_path='NLP/model/recipe_ing_model.h5'):
-    return tf.saved_model.load(model_path)
+    model = tf.saved_model.load(model_path)
+    if model:
+        print('LSTM Successfully loaded')
+    return model
     
 def train_model_RecipeToIngreds():
     epoch_nr=10
@@ -119,9 +122,10 @@ def get_RecipeToIngreds(txt,model):
     
     clear_input
     title = input('Give Recipe Title: ')
-    df = pd.read_csv("csv_file/new_recipes.csv")
-    df.loc[len(df)]={'title':title,'ingredients':ing,'recipe':txt}
-    df.to_csv('csv_file/new_recipes.csv', index=False)
+    region = input('Region of the plate: ')
+    df = pd.read_csv("csv_file/recipes.csv")
+    df.loc[len(df)]={'title':title,'ingredients':ing,'region':region,'recipe':txt}
+    df.to_csv('csv_file/recipes.csv', index=False)
     
     return ing
     

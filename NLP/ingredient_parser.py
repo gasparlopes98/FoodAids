@@ -413,6 +413,7 @@ def ingredient_parser(ingreds,keyword=False):
     if isinstance(ingreds, list):
         ingredients = ingreds
     else:
+        # print(ingreds)
         ingreds = ingreds.replace(" ",",")
         ingredients = ingreds.split(",")
         

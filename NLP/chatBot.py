@@ -1,23 +1,21 @@
 from sys import path
-path.append('reconhecimento_imagem')
+path.append('image_rec')
 import predict_dish as predict
 
 import spacy
 import random
 import re
-import nltk
-nltk.download('stopwords') # install NLTK data to home user directory
 from nltk.corpus import stopwords
 import unidecode
-from NLP.word2vec import load_word2vec,get_recipes_keywords
+from word2vec import load_word2vec,get_recipes_keywords
+from recipe_to_ingredients import load_model_RecipeToIngreds,get_RecipeToIngreds
+
+# Loading models
 model_w2v=load_word2vec()
-
-
+model_recie_ing = load_model_RecipeToIngreds()
 model_img=predict.read_model()
 
 nlp = spacy.load("en_core_web_sm")
-
-
 
 def clear_input(_):
     return ''
@@ -28,12 +26,6 @@ STOPWORDS = set(stopwords.words('english'))
 STOPWORDS_RE = re.compile(r"\b(" + "|".join(STOPWORDS) + ")\\W")
 
 def text_prepare(text):
-    """
-        text: a string
-        
-        return: modified initial string
-    """
-    
     #text = # lowercase text
     text = unidecode.unidecode(text).lower()
     #text = # replace REPLACE_BY_SPACE_RE symbols by space in text
@@ -90,19 +82,13 @@ def check_all_messages(message):
     # Responses -------------------------------------------------------------------------------------------------------
     response('Hello! How can I help you?', ['hi', 'hey','hello'], single_response=True)
     response('Goodbye!', ['See you', 'goodbye','bye'], single_response=True)
-    response('I am ok. And you?', ['how', 'are', 'you'], single_response=True)
+    response('I am ok. And you?', ['how', 'are', 'you'], single_response=False)
     response('You are Welcome', ['thank you','thanks'], single_response=True)
-    response('Recipe: ', ['give','recipe',''], single_response=False)
-    
-    #response('Dish in image is: ', ['identify','dish',''], single_response=False)
-
-    response('Dish in image is: ', ['.jpg'], single_response=False)
-    #response('Ok, aqui vai: \n' + file_contents, ['da', 'receita', 'bacalhau'], required_words=['
-
+    response('Recipe: ', ['give','recipe'], single_response=False)
+    response('Dish in image is: ', ['.jpg'], single_response=True)
+    response('The ingredients are: ', ['give','ingredients','.txt'], single_response=False)
     
     best_match = max(highest_prob_list, key=highest_prob_list.get)
-    # print(highest_prob_list)
-    # print(f'Best match = {best_match} | Score: {highest_prob_list[best_match]}')
 
     return unknown() if highest_prob_list[best_match] < 1 else best_match
 
@@ -116,7 +102,6 @@ def extract_recipe_name(user_input):
 # Used to get the response
 def get_response(user_input):
     text = text_prepare(user_input)
-    print(text)
     doc = nlp(text)
     recipe_names = extract_recipe_name(text) # extract dish name from user input
     if recipe_names: # if dish name is found
@@ -132,34 +117,55 @@ def generate_response(recipe_names):
     output = "The following recipes exist for the dish name you mentioned: " + ', '.join(recipe_names)
     return output
 
+chat=['','','']
+def insert_chat(word):
+    chat.pop(0)
+    chat.append(word)
+    return chat
+
 clear_input
 if __name__ == "__chatBot__":
     while True:
         inp=input('user: ')
+        insert_chat(inp)
         resp=get_response(inp)
-        print('FoodAids: ' + resp)
+        
         if resp == 'Goodbye!':
+            print('FoodAids: ' + resp)
             break;
-    
-        elif resp == 'Dish in image is: ':
-            print(inp)
-            image_path = [token.text for token in inp if token.text.startswith('/')]
-            if image_path:
-                predicted_dish = predict.predict_image(model_img, image_path[0])
-                print(predicted_dish)
 
         elif ".jpg" in inp:
-            print(inp)  
-            path = inp
-            response = predict.predict_image(model_img,path)
-            print(response) 
+            x=inp.split(' ')
+            try:
+                response = predict.predict_image(model_img,x[-1])
+                print('FoodAids: Dish in image is: ' + ' '.join(response.split('_')))
+                insert_chat(' '.join(response.split('_')))
+            except:
+                print('FoodAids: Did not find path!')          
 
         elif resp == 'Recipe: ':
-            recipe=get_recipes_keywords(model_w2v,inp)
-            print('Title: ',end="")
-            print(' '.join(recipe.title.values))
-            print('Ingredients: ',end="")
-            [print(i) for i in recipe.ingredients.values]
-            print('Preparation: ',end="")
-            print(' '.join(recipe.recipe.values))
-        
+            print('FoodAids: ' + resp)
+            for i in range(2,-1,-1):
+                print(chat[i])
+                recipe=get_recipes_keywords(model_w2v,chat[i])
+                if float(recipe.score.values[0]) > 0.20: 
+                    print('Title: ',end="")
+                    print(' '.join(recipe.title.values))
+                    print('Ingredients: ',end="")
+                    [print(i) for i in recipe.ingredients.values]
+                    print('Preparation: ',end="")
+                    print(' '.join(recipe.recipe.values))
+                    break
+            
+        elif resp == 'The ingredients are: ':
+            x=inp.split(' ')
+            
+            try:
+                txt = open(x[-1], "r")
+                ingredients = get_RecipeToIngreds(txt.read(),model_recie_ing)
+                print('FoodAids: ' + resp, end="")
+                print(ingredients)
+            except:
+                print('FoodAids: Did not find path!')
+        else:
+            print('FoodAids: ' + resp)
